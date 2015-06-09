@@ -3,7 +3,6 @@ package phone;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileInputStream;
@@ -24,6 +23,7 @@ import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -82,7 +82,7 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 	JPanel find;
 	String[] findkind = {"이름", "폰 번호", "집 번호", "이메일", "그룹"};
 	public String search;
-	public static int index;
+	public static int index, combo;
 	ContactManager(){
 		setTitle("연락처");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -95,7 +95,7 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 			public void actionPerformed(ActionEvent e) {
 				@SuppressWarnings("unchecked")
 				JComboBox<String> cb = (JComboBox<String>)e.getSource();
-				index = cb.getSelectedIndex();
+				combo = cb.getSelectedIndex();
 			}});
 		findblank = new JTextField(15);
 		findstart = new JButton("검색");
@@ -140,7 +140,7 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 	void creatMenu(){
 		JMenuBar mb = new JMenuBar();
 		JMenuItem[] menuItem = new JMenuItem[5];
-		String[] itemTitle = {"Home", "연락처 추가", "연락처 수정", "연락처 삭제", "연락처 검색"};
+		String[] itemTitle = {"Home", "연락처 추가", "연락처 저장", "연락처 가져오기", "스팸관리"};
 		for (int i=0; i<menuItem.length;i++){
 			menuItem[i] = new JMenuItem(itemTitle[i]);
 			menuItem[i].addActionListener(new MenuActionListener());
@@ -152,25 +152,29 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 		public void actionPerformed(ActionEvent e) {
 			String select = e.getActionCommand();
 			if(select.equals("Home")){
-				try{
-					model.clear();
-				}catch(Exception ex){}
-				try{
-					for(int i=0;i<list.size();i++){
-						model.add(0,list.get(i).name);
-					}
-				}catch(Exception ex){System.out.println("error");}
-				namelist.addListSelectionListener(new JListHandler());
+				home();
 			}else if(select.equals("연락처 추가")){
 				addContact a = new addContact();
-			}else if(select.equals("연락처 수정")){
+				home();
+			}else if(select.equals("연락처 저장")){
+				Output();
+			}else if(select.equals("연락처 가져오기")){
+				//Input();
+			}else if(select.equals("스팸관리")){
 				
-			}else if(select.equals("연락처 삭제")){
-				
-			}else if(select.equals("연락처 검색")){
-				findContacts f = new findContacts();
 			}	
 		}
+	}
+	public void home(){
+		try{
+			model.clear();
+		}catch(Exception ex){}
+		try{
+			for(int i=0;i<list.size();i++){
+				model.add(0,list.get(i).name);
+			}
+		}catch(Exception ex){System.out.println("error");}
+		namelist.addListSelectionListener(new JListHandler());
 	}
 	private class JListHandler implements ListSelectionListener{
 		public void valueChanged(ListSelectionEvent event){
@@ -178,7 +182,7 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 				homeuser.setEditable(false);
 				homeuser.setText("");
 				String name = namelist.getSelectedValue();
-				int index = indexOfContact(name);
+				index = indexOfContact(name);
 				System.out.println(index);
 				if(index<list.size()+1){
 					homeuser.append("이름 : "+list.get(index).name+"\n");
@@ -204,37 +208,44 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 		public void actionPerformed(ActionEvent e) {
 			model.clear();
 			search = findblank.getText();
-			if(index == 0){
+			System.out.println(search);
+			
+			if(combo == 0){
 				for(int i=0;i<list.size();i++){
 					if(list.get(i).name.contains(search)){
 						model.addElement(list.get(i).name);
 					}
 				}
+				System.out.println("이름");
 
-			}else if(index == 1){
+			}else if(combo == 1){
 				for(int i=0;i<list.size();i++){
 					if(list.get(i).phone_num.contains(search)){
 						model.addElement(list.get(i).name);
 					}
 				}
-			}else if(index == 2){
+				System.out.println("폰번");
+			}else if(combo == 2){
 				for(int i=0;i<list.size();i++){
 					if(list.get(i).home_num.contains(search)){
 						model.addElement(list.get(i).name);
 					}
 				}
-			}else if(index == 3){
+				System.out.println("집번");
+			}else if(combo == 3){
 				for(int i=0;i<list.size();i++){
 					if(list.get(i).email.contains(search)){
 						model.addElement(list.get(i).name);
 					}
 				}
-			}else if(index == 4){
+				System.out.println("이메일");
+			}else if(combo == 4){
 				for(int i=0;i<list.size();i++){
 					if(list.get(i).group.contains(search)){
 						model.addElement(list.get(i).name);
 					}
 				}
+				System.out.println("그룹");
 			}
 			namelist.addListSelectionListener(new JListHandler());
 		}
@@ -242,12 +253,16 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 	private class SetAction implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			setContact sc = new setContact();
-			System.out.println("2");
+			home();
 		}
 	}
 	private class deleteAction implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			list.remove(index);
+			int result = JOptionPane.showConfirmDialog(null, "삭제하시겠습니까?", "삭제 확인", JOptionPane.YES_NO_OPTION);
+			if(result == JOptionPane.YES_OPTION){
+				list.remove(index);
+				home();
+			}
 		}
 	}
 	public static void Input(){
@@ -262,6 +277,7 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 				for (int i=0; i<list2.size(); i++){
 					list.add(list2.get(i));
 				}
+				JOptionPane.showMessageDialog(null, "가져왔습니다", "가져오기", JOptionPane.INFORMATION_MESSAGE);
 			}
 		}catch(Exception ex){
 		}finally{
@@ -281,6 +297,7 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 			oos.reset();
 			oos.writeObject(list);
 			oos.reset();
+			JOptionPane.showMessageDialog(null, "저장되었습니다", "저장", JOptionPane.INFORMATION_MESSAGE);
 			System.out.println("저장되었습니다.");
 		}catch(Exception ex){
 		}finally{
@@ -290,130 +307,10 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 			}catch(IOException ioe){}
 		} // finally
 	}
-	void addContact(){
-		System.out.print("이름 : ");
-		name = s.nextLine();
-		name = s.nextLine();
-		System.out.print("폰 번호 : ");
-		phone_num = s.next();
-		System.out.print("집 번호 : ");
-		home_num = s.next();
-		System.out.print("이메일 : ");
-		email = s.next();
-		System.out.print("속할 그룹 : ");
-		group = s.next();
-		list.add(new Contact(name, phone_num, home_num, email, group));
-		System.out.println("추가 되었습니다.");
-	}
-	void setContact(){
-		listname();
-		System.out.print("수정하고 싶은 번호을 입력하세요 ");
-		int number = s.nextInt();
-		System.out.print("이름 : ");
-		name = s.nextLine();
-		name = s.nextLine();
-		System.out.print("폰 번호 : ");
-		phone_num = s.next();
-		System.out.print("집 번호 : ");
-		home_num = s.next();
-		System.out.print("이메일 : ");
-		email = s.next();
-		System.out.print("속할 그룹 : ");
-		group = s.next();
-		list.set(number-1, new Contact(name, phone_num, home_num, email, group));
-		System.out.println("수정되었습니다. ");
-	}
-	void listname(){
-		for (int i=0; i<list.size();i++){
-			System.out.println(i+1+") "+list.get(i).name);
-		}
-	}
-	void addgroupMenu(){
-		System.out.print("추가하고 싶은 그룹명을 입력하세요 : ");
-		String groupname = s.nextLine();
-		groupmenu.add(groupname);
-		System.out.println("그릅이름이 추가되었습니다.");
-	}
-	void deleteContact(){
-		listname();
-		System.out.print("삭제하고 싶은 연락처 번호를 입력하세요 : ");
-		int number = s.nextInt();
-		list.remove(number-1);
-		System.out.println("삭제되었습니다.");
-	}
-	void listContact(int i){
-		System.out.println("이름 : "+list.get(i).name);
-		System.out.println("\t휴대번호 : "+list.get(i).phone_num);
-		System.out.println("\t집 번호 : "+list.get(i).home_num);
-		System.out.println("\t이메일  : "+list.get(i).email);
-		System.out.println("\t그룹 : "+list.get(i).group);
-	}
-	/*void findContact(){
-		System.out.print("1. 이름  2. 번호  3. 이메일  4. 그룹명 : ");
-		int number = s.nextInt();
-		if(number == 1){
-			System.out.print("검색하실 이름 : ");
-			name = s.next();
-			for (int i=0;i<list.size(); i++){
-				if(list.get(i).name.contains(name)){
-					listContact(i);
-				}
-			}
-		}else if(number == 2){
-			System.out.print("검색하실 번호 : ");
-			String snum = s.next();
-			for (int i=0;i<list.size(); i++){
-				if (String.valueOf(list.get(i).home_num).contains(snum) || String.valueOf(list.get(i).phone_num).contains(snum)){
-					listContact(i);
-				}
-			}		
-		}else if(number == 3){
-			System.out.print("검색하실 이메일 : ");
-			email = s.next();
-			for (int i=0;i<list.size(); i++){
-				if(list.get(i).email.contains(email)){
-					listContact(i);
-				}
-			}
-		}else if(number == 4){
-			System.out.print("검색하실 그룹명 : ");
-			group = s.next();
-			for (int i=0;i<list.size(); i++){
-				if(list.get(i).group.contains(group)){
-					listContact(i);
-				}
-			}
-		}
-	}*/
-	void Start(){
-		int mode = 0;
-		while (mode != 6){
-			System.out.println("=============================================================");
-			System.out.print("1) 연락처 추가 2) 연락처 수정 3) 연락처 삭제 4) 연락처 검색 5) 그룹 추가 6) 종료 : ");
-			mode = s.nextInt();
-			System.out.println("=============================================================");
-			if (mode == 1){
-				addContact();
-			}else if(mode == 2){
-				setContact();
-			}else if(mode == 3){
-				deleteContact();
-			}else if(mode == 4){
-				//findContact();
-			}else if(mode == 5){
-				addgroupMenu();
-			}else if(mode == 7){
-				for(int i=0; i<list.size(); i++){
-					listContact(i);
-				}
-			}
-		}
-		System.out.println("종료합니다.");
-	}
+	
 	public static void main(String[] args){
 		Input();
 		ContactManager c = new ContactManager();
-		c.Start();
 		Output();
 	}
 }

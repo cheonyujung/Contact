@@ -50,8 +50,14 @@ public class addContact extends JFrame{
 				home_num = addtext3.getText();
 				email = addtext4.getText();
 				group = addtext5.getText();
-				ContactManager.list.add(new Contact(name, phone_num, home_num, email, group));				
-				setVisible(false);
+				if(phone_num.matches("^-?[0-9]+(\\.[0-9]+)?$") && home_num.matches("^-?[0-9]+(\\.[0-9]+)?$")){
+					ContactManager.list.add(new Contact(name, phone_num, home_num, email, group));				
+					setVisible(false);
+				}else{
+					
+				}
+				
+				
 			}
 		});
 		JButton btn2 = new JButton("√Îº“");
@@ -65,5 +71,6 @@ public class addContact extends JFrame{
 		content.add(add);
 		setSize(500, 500);
 		setVisible(true);
+		
 	}
 }

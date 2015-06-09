@@ -26,7 +26,6 @@ public class setContact extends JFrame{
 	private JTextField addtext5;
 	String name, phone_num, home_num, email, group;
 	setContact(){
-		System.out.println("3");
 		setTitle("연락처 수정");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		content = getContentPane();
@@ -48,6 +47,7 @@ public class setContact extends JFrame{
 		addtext5 = new JTextField(ContactManager.list.get(ContactManager.index).group);
 		set.add(addtext5);
 		JButton btn1 = new JButton("저장");
+		System.out.println(ContactManager.index);
 		btn1.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				name = addtext1.getText();
@@ -55,6 +55,7 @@ public class setContact extends JFrame{
 				home_num = addtext3.getText();
 				email = addtext4.getText();
 				group = addtext5.getText();
+
 				ContactManager.list.set(ContactManager.index, new Contact(name, phone_num, home_num, email, group));				
 				setVisible(false);
 			}
