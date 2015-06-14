@@ -1,16 +1,22 @@
 package phone;
 
+import java.awt.AWTException;
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.EventHandler;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -20,47 +26,23 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-
-@SuppressWarnings("serial")
-class Contact implements Serializable{
-	String name;
-	String phone_num;
-	String home_num;
-	String email;
-	String group;
-	
-	Contact (String n, String p, String h, String e, String g){
-		this.name = n;
-		this.phone_num = p;
-		this.home_num = h;
-		this.email = e;
-		this.group = g;
-	}
-	
-	String getName(){
-		return name;
-	}
-	
-	String getPhone_num(){
-		return phone_num;
-	}
-	
-	void setName(String name){
-		this.name = name;
-	}
-}
 
 public class ContactManager extends JFrame /*implements ActionListener*/{
 	/**
@@ -75,17 +57,22 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 	private JTextArea homeuser;
 	private JTextField findblank;
 	private DefaultListModel<String> model;
+	Container ctp;
 	JButton set;
 	JButton delete;
 	JButton findstart;
 	JPanel home;
 	JPanel find;
+	JPanel spam;
+	private JPanel Spammenu;
 	String[] findkind = {"이름", "폰 번호", "집 번호", "이메일", "그룹"};
 	public String search;
-	public static int index, combo;
+	public static int index, combo,selectright;
 	ContactManager(){
 		setTitle("연락처");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		//ContactLogin cl = new ContactLogin();
 		home = new JPanel();
 		home.setLayout(new BorderLayout(10, 10));
 		find = new JPanel();
@@ -102,8 +89,7 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 		SearchAction sa = new SearchAction();
 		findstart.addActionListener(sa);
 		set = new JButton("수정");
-		SetAction seta = new SetAction();
-		set.addActionListener(seta);
+		set.addActionListener(new setListener());
 		delete = new JButton("삭제");
 		deleteAction da = new deleteAction();
 		delete.addActionListener(da);
@@ -112,17 +98,55 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 		find.add(findstart);
 		find.add(set);
 		find.add(delete);
+		JPopupMenu rightMenu = new JPopupMenu("Popup");
+		JMenuItem item = new JMenuItem("스팸 추가");
+	    item.addActionListener(new ActionListener() {
+	    	public void actionPerformed(ActionEvent e) {
+                list.get(selectright).setGroup("spam");
+	        }
+	    });
+	    JMenuItem item2 = new JMenuItem("스팸 삭제");
+	    item2.addActionListener(new ActionListener() {
+	    	public void actionPerformed(ActionEvent e) {
+	    		list.get(selectright).setGroup("before");
+	    	}
+	    });
+	    rightMenu.add(item);
+	    rightMenu.add(item2);
 		homeuser = new JTextArea("");
 		homeuser.setPreferredSize(new Dimension(250,500));
 		model = new DefaultListModel<String>();
 		namelist = new JList<String>(model);
 		namelist.setVisibleRowCount(15);
 		namelist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		namelist.addListSelectionListener(new JListHandler());
+		namelist.addMouseListener( new MouseAdapter()
+        {
+            public void mousePressed(MouseEvent e)
+            {
+                 if ( SwingUtilities.isRightMouseButton(e) )
+                 {
+                	 System.out.println("1");
+                	 rightMenu.show(e.getComponent(), e.getX(), e.getY());
+                 }
+            }
+
+            public void mouseReleased(MouseEvent e)
+            {
+                 if ( SwingUtilities.isRightMouseButton(e) )
+                 {
+                      JList list = (JList)e.getSource();
+                      selectright = indexOfContact(String.valueOf(list.getSelectedValue()));
+                      System.out.println(selectright);
+                      System.out.println(list.getSelectedValue() + " selected");
+                 }
+            }
+       });
 		this.add(new JScrollPane(namelist));
 		home.add("North", find);
 		home.add("Center", namelist);
 		home.add("East", homeuser);
-		this.add(home, "Center");
+		this.add(home, "Center");//
 		creatMenu();
 		setSize(500, 500);
 		setVisible(true);
@@ -154,16 +178,30 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 			if(select.equals("Home")){
 				home();
 			}else if(select.equals("연락처 추가")){
-				addContact a = new addContact();
+				new addContact();
 				home();
 			}else if(select.equals("연락처 저장")){
 				Output();
 			}else if(select.equals("연락처 가져오기")){
 				//Input();
 			}else if(select.equals("스팸관리")){
-				
+				Spam();
 			}	
 		}
+	}
+
+	public void Spam(){
+		try{
+			model.clear();
+		}catch(Exception ex){}
+		try{
+			System.out.println(list.size());
+			for(int i=0;i<list.size();i++){
+				if(list.get(i).group.equals("spam")){
+					model.addElement(list.get(i).getName());
+				}
+			}
+		}catch(Exception ex){System.out.println("error");}
 	}
 	public void home(){
 		try{
@@ -171,10 +209,12 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 		}catch(Exception ex){}
 		try{
 			for(int i=0;i<list.size();i++){
-				model.add(0,list.get(i).name);
+				if(!list.get(i).group.equals("spam")){
+					model.addElement(list.get(i).getName());
+				}
 			}
 		}catch(Exception ex){System.out.println("error");}
-		namelist.addListSelectionListener(new JListHandler());
+
 	}
 	private class JListHandler implements ListSelectionListener{
 		public void valueChanged(ListSelectionEvent event){
@@ -182,20 +222,36 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 				homeuser.setEditable(false);
 				homeuser.setText("");
 				String name = namelist.getSelectedValue();
+				System.out.println(name);
 				index = indexOfContact(name);
-				System.out.println(index);
+				System.out.println("index"+index);
 				if(index<list.size()+1){
-					homeuser.append("이름 : "+list.get(index).name+"\n");
-					homeuser.append("폰 번호 : "+list.get(index).phone_num+"\n");
-					homeuser.append("집 번호  : "+list.get(index).home_num+"\n");
-					homeuser.append("이메일 : "+list.get(index).email+"\n");
-					homeuser.append("그룹 : "+list.get(index).group+"\n");
+					homeuser.append(list.get(index).PrintInfo());
 				}
 			}catch(Exception ex){System.out.println("error2");}
 		
 		}
+		public void check(MouseEvent e){
+			if(e.isPopupTrigger()){
+				System.out.println("right");
+			}
+		}
 	}
-	int indexOflist(String name){
+	class setListener implements ActionListener{
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			setContact sc =new setContact();
+			String name = namelist.getSelectedValue();
+			index = indexOfContact(name);
+			sc.createPanel(list.get(index));
+			sc.pack();
+			sc.setVisible(true);
+			home();
+		}
+	}
+	static int indexOflist(String name){
 		int index = list.size()+1;
 		for(int i =0;i<list.size();i++){
 			if(list.get(i).name.equals(name)){
@@ -250,12 +306,6 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 			namelist.addListSelectionListener(new JListHandler());
 		}
 	}
-	private class SetAction implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			setContact sc = new setContact();
-			home();
-		}
-	}
 	private class deleteAction implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			int result = JOptionPane.showConfirmDialog(null, "삭제하시겠습니까?", "삭제 확인", JOptionPane.YES_NO_OPTION);
@@ -274,6 +324,7 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 			if(ois!=null){
 				@SuppressWarnings("unchecked")
 				ArrayList<Contact> list2 = (ArrayList<Contact>)ois.readObject();
+				System.out.println(list2);
 				for (int i=0; i<list2.size(); i++){
 					list.add(list2.get(i));
 				}
@@ -310,6 +361,7 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 	
 	public static void main(String[] args){
 		Input();
+		ContactLogin l = new ContactLogin();
 		ContactManager c = new ContactManager();
 		Output();
 	}
