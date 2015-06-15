@@ -81,7 +81,6 @@ public class ContactLogin extends JFrame{
 			boolean loginok = false;
 			String id = tfld.getText();
 			String password = new String(tfPwd.getPassword());
-			System.out.println(id+" "+password);
 			for(String i : ContactManager.idpw.keySet()){
 				if(i.equals(id)){
 					if(ContactManager.idpw.get(i).equals(password)){

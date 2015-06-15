@@ -32,7 +32,6 @@ public class setContact extends JFrame{
 	setContact(){
 		setTitle("연락처 수정");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		System.out.println("index1-"+ContactManager.index);
 		content = getContentPane();
 
 	}
@@ -70,15 +69,15 @@ public class setContact extends JFrame{
 					JOptionPane.showMessageDialog(null, "이름이 입력되지 않았습니다.", "연락처 추가", JOptionPane.ERROR_MESSAGE);
 				}else{
 					if(phone_num.matches("^-?[0-9]+(\\.[0-9]+)?$") && home_num.matches("^-?[0-9]+(\\.[0-9]+)?$")){
-						Contact con = new Contact(name,phone_num,home_num,email,group);
-						if(checkContact(con)){
-							JOptionPane.showMessageDialog(null, "이미 입력되었습니다.", "연락처 추가", JOptionPane.ERROR_MESSAGE);
+						int index1 = ContactManager.indexOflist(name);
+						if(index1 < ContactManager.list.size()){
+							ContactManager.list.get(index1).setName(name);
+							ContactManager.list.get(index1).setPhone_num(phone_num);
+							ContactManager.list.get(index1).setHome_num(home_num);
+							ContactManager.list.get(index1).setEmail(email);
+							ContactManager.list.get(index1).setGroup(group);
 						}else{
-							con.setName(name);
-							con.setPhone_num(phone_num);
-							con.setHome_num(home_num);
-							con.setEmail(email);
-							con.setGroup(group);
+							
 						}
 						setVisible(false);
 					}else{

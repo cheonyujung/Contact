@@ -43,7 +43,6 @@ public class ReaderWriter {
 			if(ois1!=null){
 				@SuppressWarnings("unchecked")
 				ArrayList<ContactWithId> listinputid = (ArrayList<ContactWithId>)ois1.readObject();
-				System.out.println(listinputid);
 				for (int i=0; i<listinputid.size(); i++){
 					ContactManager.listid.add(listinputid.get(i));
 				}
@@ -64,9 +63,7 @@ public class ReaderWriter {
 		ObjectInputStream ois2 = null;
 		try{
 			fin2 = new FileInputStream(file);
-			System.out.println(fin2);
 			ois2 = new ObjectInputStream(fin2);
-			System.out.println("*"+ois2);
 				@SuppressWarnings("unchecked")
 				HashMap<String,String> listid2 = (HashMap<String,String>)ois2.readObject();
 				for (String i : listid2.keySet()){
@@ -88,7 +85,6 @@ public class ReaderWriter {
 		try{
 			fout = new FileOutputStream(f);
 			oos = new ObjectOutputStream(fout);
-			
 			oos.writeObject(ContactManager.list);
 			oos.reset();
 			oos.writeObject(ContactManager.list);
@@ -119,7 +115,7 @@ public class ReaderWriter {
 			}catch(IOException ioe){}
 		} // finally
 	}
-	public  void OutputHashMapID(String f){
+	public void OutputHashMapID(String f){
 		FileOutputStream fout2 = null;
 		ObjectOutputStream oos2 = null;
 		try{

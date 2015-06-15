@@ -13,9 +13,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Scanner;
-import java.util.Set;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -47,7 +45,6 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 	static HashMap<String, String> idpw = new HashMap<String, String>();
 	Scanner s = new Scanner(System.in);
 	String name, email, group, phone_num, home_num;
-	Set<String> groupmenu = new HashSet<String>();
 	private JList<String> namelist;
 	private JTextArea homeuser;
 	private JTextField findblank;
@@ -206,7 +203,6 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 			model.clear();
 		}catch(Exception ex){}
 		try{
-			System.out.println(list.size());
 			for(int i=0;i<list.size();i++){
 				if(list.get(i).group.equals("spam")){
 					model.addElement(list.get(i).getName());
@@ -233,9 +229,7 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 				homeuser.setEditable(false);
 				homeuser.setText("");
 				String name = namelist.getSelectedValue();
-				System.out.println(name);
 				index = indexOfContact(name);
-				System.out.println("index"+index);
 				if(index<list.size()+1){
 					homeuser.append(list.get(index).PrintInfo());
 				}
@@ -270,44 +264,36 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 		public void actionPerformed(ActionEvent e) {
 			model.clear();
 			search = findblank.getText();
-			System.out.println(search);
-			
 			if(combo == 0){
 				for(int i=0;i<list.size();i++){
 					if(list.get(i).name.contains(search)){
 						model.addElement(list.get(i).name);
 					}
 				}
-				System.out.println("이름");
-
 			}else if(combo == 1){
 				for(int i=0;i<list.size();i++){
 					if(list.get(i).phone_num.contains(search)){
 						model.addElement(list.get(i).name);
 					}
 				}
-				System.out.println("폰번");
 			}else if(combo == 2){
 				for(int i=0;i<list.size();i++){
 					if(list.get(i).home_num.contains(search)){
 						model.addElement(list.get(i).name);
 					}
 				}
-				System.out.println("집번");
 			}else if(combo == 3){
 				for(int i=0;i<list.size();i++){
 					if(list.get(i).email.contains(search)){
 						model.addElement(list.get(i).name);
 					}
 				}
-				System.out.println("이메일");
 			}else if(combo == 4){
 				for(int i=0;i<list.size();i++){
 					if(list.get(i).group.contains(search)){
 						model.addElement(list.get(i).name);
 					}
 				}
-				System.out.println("그룹");
 			}
 			namelist.addListSelectionListener(new JListHandler());
 		}
@@ -323,7 +309,6 @@ public class ContactManager extends JFrame /*implements ActionListener*/{
 	}
 	class windowCloseListener implements WindowListener{
 		public void windowClosing(WindowEvent e){
-			System.out.println(ContactManager.id);
 			rw.Output("C:\\Users\\yujung\\workspace\\phone\\src\\phone\\"+ContactManager.id+".txt");
 			rw.OutputContactwithID("C:\\Users\\yujung\\workspace\\phone\\src\\phone\\"+ContactManager.id+"id.txt" );
 			rw.OutputHashMapID("C:\\Users\\yujung\\workspace\\phone\\src\\phone\\12.txt");
